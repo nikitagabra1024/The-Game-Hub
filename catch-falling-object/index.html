@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catch The Fruits</title>
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(120deg, #f6d365, #fda085);
+  background-size: 200% 200%;
+  animation: bgmove 10s infinite alternate;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+}
+@keyframes bgmove {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+h1 {
+  font-size: 3em;
+  margin-bottom: 30px;
+  text-shadow: 2px 2px 4px #fff;
+}
+button {
+  background: #ff6f61;
+  color: white;
+  border: none;
+  padding: 15px 35px;
+  font-size: 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: transform 0.3s;
+}
+button:hover {
+  transform: scale(1.05);
+}
+</style>
+</head>
+<body>
+  <h1>🍓 Catch The Fruits</h1>
+  <button onclick="startGame()">Start Game</button>
+  <script>
+    function startGame() {
+      window.location.href = "game.html";
+    }
+  </script>
+</body>
+</html>

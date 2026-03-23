@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Hub</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <h1>GAME HUB</h1>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="#messages">Messages</a></li>
+      <li><a href="#about">About Game</a></li>
+      <li><a href="#playgames">Play Games</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- Messages / Quotes -->
+<section id="messages">
+  <h2>🎮 Messages & Quotes</h2>
+  <div id="quoteBox">
+    <p id="quoteText">"Loading quotes..."</p>
+    <p id="quoteAuthor"></p>
+  </div>
+</section>
+
+<!-- About Game -->
+<section id="about">
+  <h2>About Game</h2>
+  <p>Welcome to Game Hub! This is your one-stop place to play multiple games. Each game has unique rules and challenges. Have fun and enjoy!</p>
+  <ul>
+    <li>Play as many games as you like.</li>
+    <li>Try to get the highest score.</li>
+    <li>Each game is designed to improve your skills.</li>
+  </ul>
+</section>
+
+<!-- Play Games -->
+<section id="playgames">
+  <h2>🎯 Play Games</h2>
+  <div class="game-grid">
+    <div class="game-box" onclick="openGame('tic-tac-toe/index.html')">Tic Tac Toe</div>
+    <div class="game-box" onclick="openGame('flip-the-card/index.html')">Flip the Cards</div>
+    <div class="game-box" onclick="openGame('catch-falling-objects/index.html')">Catch Objects</div>
+    <div class="game-box" onclick="openGame('whack-a-mole/index.html')">Whack a Mole</div>
+    <div class="game-box" onclick="openGame('to-do-list/index.html')">To Do List</div>
+    <div class="game-box" onclick="openGame('typing/index.html')">Typing Speed</div>
+  </div>
+</section>
+
+
+<script src="script.js"></script>
+<script>
+function openGame(url){
+  // window.location is a common way to navigate between pages using JavaScript
+  //It's a simple and effective way to change the page the user is viewing.
+  window.location.href = url;
+}
+</script>
+
+</body>
+</html>

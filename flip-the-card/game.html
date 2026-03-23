@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Flip The Cards Game</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(270deg, #a1c4fd, #c2e9fb);
+    background-size: 400% 400%;
+    animation: bgMove 10s ease infinite;
+    text-align: center;
+    color: #222;
+  }
+  @keyframes bgMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  h1 {
+    margin-top: 15px;
+    font-size: 2.3em;
+  }
+
+  .status-bar {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 18px;
+    margin: 15px;
+    font-weight: 600;
+  }
+
+  #gameBoard {
+    display: grid;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px auto;
+  }
+
+  .card {
+    width: 90px;
+    height: 110px;
+    perspective: 600px;
+    cursor: pointer;
+  }
+
+  .inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s;
+  }
+
+  .card.flipped .inner {
+    transform: rotateY(180deg);
+  }
+
+  .front, .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    backface-visibility: hidden;
+  }
+
+  .front {
+    background: #fff;
+    transform: rotateY(180deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .front img {
+    width: 70%;
+    height: 70%;
+  }
+
+  .back {
+    background: linear-gradient(145deg, #6a11cb, #2575fc);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+
+  button {
+    padding: 10px 20px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 10px;
+  }
+
+  button:hover {
+    background: #45a049;
+  }
+
+  #message {
+    font-size: 22px;
+    font-weight: bold;
+  }
+
+  #confetti {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    top: 0;
+    left: 0;
+  }
+
+  .dark-mode {
+    background: linear-gradient(270deg, #141e30, #243b55);
+    color: #eee;
+  }
+</style>
+</head>
+<body>
+
+<h1>🃏 Flip The Cards</h1>
+<div class="status-bar">
+  <div>⏱️ Time: <span id="time">60</span>s</div>
+  <div>💯 Score: <span id="score">0</span></div>
+  <div>🏆 High Score: <span id="highScore">0</span></div>
+  <div>❤️ Lives: <span id="lives">5</span></div>
+</div>
+
+<canvas id="confetti"></canvas>
+<div id="gameBoard"></div>
+
+<div id="message"></div>
+<button id="restart">Restart</button>
+<button id="back">Back to Menu</button>
+<button id="themeToggle">🌙 Dark Mode</button>
+
+<script>
+const gameBoard = document.getElementById('gameBoard');
+const scoreDisplay = document.getElementById('score');
+const timeDisplay = document.getElementById('time');
+const message = document.getElementById('message');
+const highScoreDisplay = document.getElementById('highScore');
+const livesDisplay = document.getElementById('lives');
+const flipSound = document.getElementById('flipSound');
+const matchSound = document.getElementById('matchSound');
+const winSound = document.getElementById('winSound');
+const themeToggle = document.getElementById('themeToggle');
+let highScore = localStorage.getItem('flipHighScore') || 0;
+highScoreDisplay.textContent = highScore;
+
+let cards = [];
+let flipped = [];
+let score = 0;
+let lives = 5;
+let time = 60;
+let timerInterval;
+let lockBoard = false;
+
+const emojis = ["🍎","🍌","🍒","🍇","🍉","🍓","🍍","🥝","🥥","🥕","🍅","🍋","🍆","🌶️","🍄","🥑","🧄","🍊","🥦","🥔"];
+
+function generateCards() {
+  const level = localStorage.getItem('flipLevel') || 'easy';
+  let pairs = level === 'easy' ? 6 : level === 'medium' ? 8 : 12;
+  let selected = emojis.sort(() => 0.5 - Math.random()).slice(0, pairs);
+  cards = [...selected, ...selected].sort(() => 0.5 - Math.random());
+  let cols = level === 'easy' ? 4 : 4;
+  let rows = level === 'hard' ? 6 : (level === 'medium' ? 4 : 3);
+  gameBoard.style.gridTemplateColumns = `repeat(${cols}, 90px)`;
+  gameBoard.innerHTML = '';
+  cards.forEach(emoji => {
+    const card = document.createElement('div');
+    card.classList.add('card');
+    card.innerHTML = `
+      <div class="inner">
+        <div class="front"><span style="font-size:40px;">${emoji}</span></div>
+        <div class="back"></div>
+      </div>`;
+    card.addEventListener('click', () => flipCard(card, emoji));
+    gameBoard.appendChild(card);
+  });
+}
+
+function flipCard(card, emoji) {
+  if (lockBoard || card.classList.contains('flipped')) return;
+  flipSound.play();
+  card.classList.add('flipped');
+  flipped.push({ card, emoji });
+
+  if (flipped.length === 2) {
+    lockBoard = true;
+    checkMatch();
+  }
+}
+
+function checkMatch() {
+  const [first, second] = flipped;
+  if (first.emoji === second.emoji) {
+    matchSound.play();
+    score += 10;
+    flipped = [];
+    lockBoard = false;
+    scoreDisplay.textContent = score;
+    if (document.querySelectorAll('.card.flipped').length === cards.length) winGame();
+  } else {
+    lives--;
+    livesDisplay.textContent = lives;
+    setTimeout(() => {
+      first.card.classList.remove('flipped');
+      second.card.classList.remove('flipped');
+      flipped = [];
+      lockBoard = false;
+      if (lives <= 0) endGame(false);
+    }, 1000);
+  }
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    time--;
+    timeDisplay.textContent = time;
+    if (time <= 0) {
+      clearInterval(timerInterval);
+      endGame(false);
+    }
+  }, 1000);
+}
+
+function winGame() {
+  clearInterval(timerInterval);
+  winSound.play();
+  message.textContent = "🎉 You Win!";
+  message.style.color = "green";
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('flipHighScore', highScore);
+    highScoreDisplay.textContent = highScore;
+  }
+  confettiEffect();
+}
+
+function endGame(isWin) {
+  message.textContent = isWin ? "🎉 You Win!" : "💀 You Lose!";
+  message.style.color = isWin ? "green" : "red";
+}
+
+function restartGame() {
+  clearInterval(timerInterval);
+  score = 0;
+  time = 60;
+  lives = 5;
+  flipped = [];
+  lockBoard = false;
+  scoreDisplay.textContent = score;
+  livesDisplay.textContent = lives;
+  timeDisplay.textContent = time;
+  message.textContent = "";
+  generateCards();
+  startTimer();
+}
+
+function confettiEffect() {
+  const confetti = document.getElementById('confetti');
+  const ctx = confetti.getContext('2d');
+  confetti.width = window.innerWidth;
+  confetti.height = window.innerHeight;
+  let particles = [];
+  for (let i = 0; i < 150; i++) {
+    particles.push({
+      x: Math.random() * confetti.width,
+      y: Math.random() * confetti.height - confetti.height,
+      r: Math.random() * 6 + 2,
+      d: Math.random() * 0.5 + 0.5,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+    });
+  }
+  function draw() {
+    ctx.clearRect(0, 0, confetti.width, confetti.height);
+    for (let p of particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+    }
+    update();
+  }
+  function update() {
+    for (let p of particles) {
+      p.y += p.d * 5;
+      if (p.y > confetti.height) p.y = -10;
+    }
+  }
+  setInterval(draw, 30);
+}
+
+document.getElementById('restart').addEventListener('click', restartGame);
+document.getElementById('back').addEventListener('click', () => window.location.href = "index.html");
+themeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  themeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️ Light Mode' : '🌙 Dark Mode';
+});
+
+generateCards();
+startTimer();
+</script>
+</body>
+</html>

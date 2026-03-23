@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typing Words Game</title>
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(120deg, #89f7fe, #66a6ff);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  text-align: center;
+}
+h1 {
+  font-size: 3em;
+  margin-bottom: 30px;
+  color: #fff;
+  text-shadow: 2px 2px 4px #000;
+}
+button {
+  background: #ff4b2b;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: transform 0.3s;
+}
+button:hover { transform: scale(1.05); }
+</style>
+</head>
+<body>
+  <h1>📝 Typing Words Game</h1>
+  <button onclick="startGame()">Start Game</button>
+  <script>
+    function startGame() { window.location.href = "game.html"; }
+  </script>
+</body>
+</html>

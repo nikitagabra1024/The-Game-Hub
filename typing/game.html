@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typing Words Game</title>
+<style>
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(270deg, #fbc2eb, #a6c1ee);
+  animation: bg 8s ease infinite;
+  background-size: 400% 400%;
+  overflow: hidden;
+  text-align: center;
+}
+@keyframes bg {
+  0% {background-position: 0% 50%;}
+  50% {background-position: 100% 50%;}
+  100% {background-position: 0% 50%;}
+}
+h1 { margin: 10px; color: white; text-shadow: 2px 2px 3px #000; }
+#info {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  margin: 10px;
+  color: white;
+  text-shadow: 1px 1px 2px #000;
+}
+#gameArea {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  overflow: hidden;
+  background: rgba(255,255,255,0.1);
+  border-radius: 15px;
+}
+.word {
+  position: absolute;
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffeb3b;
+  text-shadow: 1px 1px 2px #000;
+}
+input {
+  margin-top: 15px;
+  font-size: 18px;
+  padding: 8px;
+  width: 300px;
+  border-radius: 8px;
+  border: none;
+}
+button {
+  background: #4CAF50;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 10px;
+}
+button:hover {background: #45a049;}
+#message {
+  font-size: 24px;
+  margin-top: 10px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+}
+</style>
+</head>
+<body>
+<h1>Type the Falling Words!</h1>
+<div id="info">
+  <div>Score: <span id="score">0</span></div>
+  <div>Missed: <span id="missed">0</span></div>
+  <div>Total Words: <span id="total">0</span></div>
+  <div>⏱️ Time: <span id="time">60</span>s</div>
+</div>
+<div id="gameArea"></div>
+<input type="text" id="inputBox" placeholder="Type here..." autofocus>
+<div id="message"></div>
+<button onclick="restart()">Restart</button>
+<button onclick="goBack()">Back to Menu</button>
+
+<script>
+const gameArea = document.getElementById("gameArea");
+const inputBox = document.getElementById("inputBox");
+
+const wordsList = ["apple","banana","orange","grape","cherry","mango","kiwi","lemon","pear","peach"];
+let fallingWords = [];
+let score = 0;
+let missed = 0;
+let totalWords = 0;
+let time = 60;
+
+// Slower falling speed and spawn
+const FALL_SPEED = 2; // pixels per interval
+const SPAWN_INTERVAL = 2000; // ms
+
+function spawnWord() {
+  const word = document.createElement("div");
+  word.classList.add("word");
+  word.textContent = wordsList[Math.floor(Math.random()*wordsList.length)];
+  word.style.left = Math.random() * (window.innerWidth - 100) + "px";
+  word.style.top = "0px";
+  gameArea.appendChild(word);
+  fallingWords.push(word);
+  totalWords++;
+  document.getElementById("total").textContent = totalWords;
+
+  const fall = setInterval(() => {
+    word.style.top = word.offsetTop + FALL_SPEED + "px";
+    if (word.offsetTop >= gameArea.offsetHeight - 30) {
+      missed++;
+      document.getElementById("missed").textContent = missed;
+      word.remove();
+      fallingWords = fallingWords.filter(w => w !== word);
+      clearInterval(fall);
+    }
+  }, 20);
+}
+
+// Check input on Enter
+inputBox.addEventListener("keydown", function(e){
+  if(e.key === "Enter"){
+    const typed = inputBox.value.trim();
+    for (let word of fallingWords) {
+      if (typed === word.textContent) {
+        score++;
+        document.getElementById("score").textContent = score;
+        word.remove();
+        fallingWords = fallingWords.filter(w => w !== word);
+        inputBox.value = "";
+        return;
+      }
+    }
+    inputBox.value = "";
+  }
+});
+
+function startGame() {
+  const wordInterval = setInterval(spawnWord, SPAWN_INTERVAL);
+  const timer = setInterval(() => {
+    time--;
+    document.getElementById("time").textContent = time;
+    if(time<=0){
+      clearInterval(wordInterval);
+      clearInterval(timer);
+      endGame();
+    }
+  },1000);
+}
+
+function endGame() {
+  document.getElementById("message").textContent =
+    score >= missed ? "🎉 You Win!" : "😢 Try Again!";
+  fallingWords.forEach(word => word.remove());
+}
+
+function restart(){ location.reload(); }
+function goBack(){ window.location.href="index.html"; }
+
+startGame();
+</script>
+</body>
+</html>

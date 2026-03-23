@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whack-A-Mole Deluxe</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(120deg, #74ebd5, #acb6e5);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #222;
+      text-align: center;
+      animation: bg 8s ease infinite;
+      background-size: 200% 200%;
+    }
+    @keyframes bg {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    h1 {
+      font-size: 3em;
+      text-shadow: 2px 2px 6px #fff;
+      margin-bottom: 40px;
+    }
+    button {
+      background: #4CAF50;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.2em;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: #45a049;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <h1>🐹 Whack-A-Mole Deluxe</h1>
+  <button onclick="startGame()">Start Game</button>
+
+  <script>
+    function startGame() {
+      window.location.href = "game.html"; // go to the main game page
+    }
+  </script>
+</body>
+</html>

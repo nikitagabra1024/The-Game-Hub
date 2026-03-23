@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Whack-A-Mole Game</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(270deg, #74ebd5, #9face6);
+    background-size: 400% 400%;
+    animation: bgMove 10s ease infinite;
+    text-align: center;
+    color: #333;
+  }
+  @keyframes bgMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  h1 { margin-top: 20px; font-size: 2.2em; color: #222; }
+  .status {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    font-size: 18px;
+    margin-top: 10px;
+    font-weight: 600;
+  }
+  .game-container {
+    display: grid;
+    grid-template-columns: repeat(3, 120px);
+    grid-gap: 20px;
+    justify-content: center;
+    margin: 30px auto;
+  }
+  .hole {
+    width: 120px;
+    height: 120px;
+    background: #5c4033;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 5px 0 #3b2c24;
+  }
+  .mole, .bomb {
+    width: 90px;
+    height: 90px;
+    position: absolute;
+    bottom: -100px;
+    left: 15px;
+    transition: bottom 0.3s;
+    cursor: pointer;
+  }
+  .mole.up, .bomb.up { bottom: 10px; }
+  .mole.hit { animation: hitAnim 0.3s ease; }
+  @keyframes hitAnim {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  #message {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+  .winner { color: #2ecc71; }
+  .loser { color: #e74c3c; }
+  #restart {
+    background: #4CAF50;
+    color: white;
+    padding: 10px 25px;
+    font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    margin-top: 15px;
+    cursor: pointer;
+    display: none;
+  }
+  #restart:hover { background: #45a049; }
+</style>
+</head>
+<body>
+
+<h1>🐹 Whack-A-Mole</h1>
+
+<div class="status">
+  <div>⏱️ Time: <span id="time">15</span>s</div>
+  <div>💯 Score: <span id="score">0</span></div>
+  <div>🏆 High Score: <span id="highScore">0</span></div>
+</div>
+
+<div class="game-container" id="game">
+  <!-- 9 holes -->
+  <div class="hole"></div>
+  <div class="hole"></div>
+  <div class="hole"></div>
+  <div class="hole"></div>
+  <div class="hole"></div>
+  <div class="hole"></div>
+  <div class="hole"></div>
+  <div class="hole"></div>
+  <div class="hole"></div>
+</div>
+
+<div id="message"></div>
+<button id="restart">Play Again</button>
+
+<audio id="hitSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_54dc2f0bfa.mp3?filename=click-124467.mp3"></audio>
+<audio id="bombSound" src="https://cdn.pixabay.com/download/audio/2022/02/23/audio_0b2a65e2b9.mp3?filename=error-126627.mp3"></audio>
+
+<script>
+const holes = document.querySelectorAll('.hole');
+const scoreDisplay = document.getElementById('score');
+const timeDisplay = document.getElementById('time');
+const message = document.getElementById('message');
+const restartBtn = document.getElementById('restart');
+const hitSound = document.getElementById('hitSound');
+const bombSound = document.getElementById('bombSound');
+const highScoreDisplay = document.getElementById('highScore');
+
+let timeUp = false;
+let score = 0;
+let timer = 15;
+let countdown;
+let highScore = localStorage.getItem('whackHighScore') || 0;
+highScoreDisplay.textContent = highScore;
+
+function randomTime(min, max) {
+  return Math.round(Math.random() * (max - min) + min);
+}
+function randomHole() {
+  const idx = Math.floor(Math.random() * holes.length);
+  return holes[idx];
+}
+function randomEntity() {
+  return Math.random() < 0.8 ? 'mole' : 'bomb';
+}
+function peep() {
+  const time = randomTime(600, 1000);
+  const hole = randomHole();
+  const type = randomEntity();
+  const entity = document.createElement('img');
+  entity.src = type === 'mole' 
+      ? 'https://cdn-icons-png.flaticon.com/512/616/616408.png'
+      : 'https://cdn-icons-png.flaticon.com/512/595/595067.png';
+  entity.classList.add(type, 'up');
+  hole.appendChild(entity);
+  entity.addEventListener('click', () => hit(type, entity));
+  setTimeout(() => {
+    entity.classList.remove('up');
+    setTimeout(() => entity.remove(), 300);
+    if (!timeUp) peep();
+  }, time);
+}
+
+function startGame() {
+  score = 0;
+  timer = 15;
+  timeUp = false;
+  message.textContent = '';
+  scoreDisplay.textContent = score;
+  peep();
+  countdown = setInterval(() => {
+    timer--;
+    timeDisplay.textContent = timer;
+    if (timer <= 0) {
+      clearInterval(countdown);
+      timeUp = true;
+      endGame();
+    }
+  }, 1000);
+}
+
+function hit(type, entity) {
+  if (!entity.classList.contains('up')) return;
+  entity.classList.add('hit');
+  if (type === 'mole') {
+    score++;
+    hitSound.play();
+  } else {
+    score = Math.max(0, score - 2);
+    bombSound.play();
+  }
+  scoreDisplay.textContent = score;
+  entity.classList.remove('up');
+}
+
+function endGame() {
+  message.textContent = score >= 10 ? '🎉 You Win!' : '😢 You Lose!';
+  message.className = score >= 10 ? 'winner' : 'loser';
+  restartBtn.style.display = 'inline-block';
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('whackHighScore', highScore);
+    highScoreDisplay.textContent = highScore;
+  }
+}
+
+restartBtn.addEventListener('click', () => {
+  message.textContent = '';
+  document.querySelectorAll('.mole, .bomb').forEach(e => e.remove());
+  restartBtn.style.display = 'none';
+  startGame();
+});
+
+window.onload = startGame;
+</script>
+</body>
+</html>
